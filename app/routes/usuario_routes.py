@@ -6,14 +6,6 @@ from app.services.auth_service import register_user,get_user_by_email
 from app.core.database import get_db
 
 router = APIRouter()
-
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-def register(data: UserCreate, db: Session = Depends(get_db)):
-    try:
-        user = register_user(data, db)
-        return user
-    except ValueError as e:
-        raise HTTPException(status_code=409, detail=str(e))
     
 # Nuevo endpoint para el formulario con imagen
 @router.post("/registro", status_code=status.HTTP_201_CREATED)

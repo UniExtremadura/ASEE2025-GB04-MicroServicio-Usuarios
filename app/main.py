@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import usuario_routes
+from app.routes import usuario_routes, artista_routes
 
 app = FastAPI(title="Usuarios API")
 
@@ -22,7 +22,7 @@ app.add_middleware(
 
 # Registrar las rutas
 app.include_router(usuario_routes.router, prefix="/usuarios", tags=["usuarios"])
-
+app.include_router(artista_routes.router, prefix="/artistas", tags=["artistas"])
 @app.get("/")
 def root():
     return {"message": "Microservicio de Usuarios activo 🚀"}
