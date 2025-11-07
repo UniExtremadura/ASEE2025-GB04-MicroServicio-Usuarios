@@ -2,12 +2,12 @@ from typing import Optional
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 from app.schemas.usuario_schema import UserCreate, UserResponse
-from app.services.auth_service import register_user,get_user_by_email
+from app.services.auth_service import register_user, get_user_by_email
+from app.services.image_service import save_avatar
 from app.core.database import get_db
 
 router = APIRouter()
     
-# Nuevo endpoint para el formulario con imagen
 @router.post("/registro", status_code=status.HTTP_201_CREATED)
 async def registro_completo(
     usuario: str = Form(...),
@@ -19,23 +19,23 @@ async def registro_completo(
     db: Session = Depends(get_db)
 ):
     try:
-        # Crear el objeto UserCreate con los datos del formulario
+        # 👇 Primero guardar la imagen si existe
+        avatar_url = None
+        if img_perfil:
+            avatar_url = await save_avatar(img_perfil, email)
+        
+        # 👇 Crear el usuario CON la URL del avatar
         user_data = UserCreate(
             email=email,
             password=password,
             display_name=nombre_completo,
             full_name=nombre_completo,
-            age=edad
+            age=edad,
+            avatar_url=avatar_url  
         )
         
-        # Registrar el usuario
+        # Registrar el usuario 
         user = register_user(user_data, db)
-        
-        # Si hay imagen, procesarla aquí
-        if img_perfil:
-            # Aquí iría la lógica para guardar la imagen
-            # Por ejemplo, guardarla en un sistema de archivos o en la base de datos
-            pass
             
         return {
             "message": "Usuario registrado exitosamente",

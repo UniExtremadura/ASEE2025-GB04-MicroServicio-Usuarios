@@ -14,11 +14,15 @@ class UserCreate(BaseModel):
     display_name: str
     full_name: str
     age: Optional[int] = None
+    avatar_url: Optional[str] = None
 
 class UserResponse(BaseModel):
     email: str
     display_name: str
+    full_name: str
+    avatar_url: Optional[str] = None  # 👈 Añadir este campo
+    age: Optional[int] = None
+    is_admin: bool = False
 
-    model_config = {
-        "from_attributes": True
-    }
+    class Config:
+        from_attributes = True
