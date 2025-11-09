@@ -12,5 +12,7 @@ def build_user_model(data: UserCreate, hashed_password: str) -> User:
         password=hashed_password,
         display_name=data.display_name,
         full_name=data.full_name,
-        age=data.age
+        age=data.age,
+        avatar_url=data.avatar_url,
+        is_admin=False
     )
