@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app.schemas.auth_schema import LoginRequest, TokenResponse  # 👈 Desde auth_schema
+from app.schemas.auth_schema import LoginRequest, TokenResponse, MeResponse 
 from app.services.usuario_service import authenticate_user, create_access_token
 from app.services.artista_service import authenticate_artista
+from app.services.auth_service import get_current_identity
 from app.core.database import get_db
 from datetime import timedelta
 from app.core.config import ACCESS_TOKEN_EXPIRE_MINUTES
@@ -74,3 +75,7 @@ def login(credentials: LoginRequest, db: Session = Depends(get_db)):
         detail="Email o contraseña incorrectos",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
+@router.get("/me", response_model=MeResponse)
+def me(current = Depends(get_current_identity)):
+    return current

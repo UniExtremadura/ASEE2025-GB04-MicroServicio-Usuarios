@@ -11,3 +11,8 @@ class TokenResponse(BaseModel):
     token_type: str
     user_type: str  # "user" o "artist"
     user_data: dict
+
+class MeResponse(BaseModel):
+    """Respuesta del endpoint /auth/me"""
+    user_type: str
+    user_data: dict
