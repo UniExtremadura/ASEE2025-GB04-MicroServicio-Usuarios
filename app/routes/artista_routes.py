@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from app.schemas.artista_schema import ArtistCreate, ArtistResponse
 from app.services.artista_service import register_artista, get_artista_by_email
+from app.services.image_service import save_avatar
 from app.core.database import get_db
 
 router = APIRouter()
@@ -17,28 +18,34 @@ async def registro_form(
     db: Session = Depends(get_db)
 ):
     try:
+        # 👇 Primero guardar la imagen si existe
+        avatar_url = None
+        if img_perfil:
+            avatar_url = await save_avatar(img_perfil, email)
+        
+        # 👇 Crear el artista CON la URL del avatar
         artist_data = ArtistCreate(
             email=email,
             password=password,
-            display_name=nombre_artistico
+            display_name=nombre_artistico,
+            avatar_url=avatar_url  
         )
+        
+        # Registrar el artista
         artist = register_artista(artist_data, db)
 
-        response = {"success": True, "message": "Artista registrado", "data": {"email": email, "display_name": nombre_artistico}}
-        # si hay imagen, procesa y añade avatar_url (placeholder)
-        if img_perfil:
-            # guardar archivo y setear avatar_url en DB (implementar en servicio)
-            pass
-
-        return JSONResponse(content=response, status_code=status.HTTP_201_CREATED)
+        return {
+            "message": "Artista registrado exitosamente",
+            "artist": artist
+        }
     except ValueError as e:
-        return JSONResponse(content={"success": False, "message": str(e)}, status_code=status.HTTP_409_CONFLICT)
+        raise HTTPException(status_code=409, detail=str(e))
     except Exception as e:
-        return JSONResponse(content={"success": False, "message": "Error interno", "error": str(e)}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+        raise HTTPException(status_code=400, detail=str(e))
+    
 @router.get("/{email}", response_model=ArtistResponse)
 def get_artist(email: str, db: Session = Depends(get_db)):
-    a = get_artista_by_email(email, db)
-    if not a:
+    artist = get_artista_by_email(email, db)
+    if not artist:
         raise HTTPException(status_code=404, detail="Artista no encontrado")
-    return a
+    return artist

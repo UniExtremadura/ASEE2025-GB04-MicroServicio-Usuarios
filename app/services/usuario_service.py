@@ -5,10 +5,10 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import HTTPException, status
 
-from app.models.artista_model import Artist
-from app.schemas.artista_schema import ArtistCreate, ArtistResponse
-from app.dao.artista_dao import get_artista_by_email as dao_get_artista_by_email, create_artista as dao_create_artista
-from app.factories.artista_factory import build_artista_model
+from app.models.usuario_model import User
+from app.schemas.usuario_schema import UserCreate, UserResponse
+from app.dao.usuario_dao import get_user_by_email as dao_get_user_by_email, create_user as dao_create_user
+from app.factories.usuario_factory import build_user_model
 from app.core.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
@@ -33,33 +33,33 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def authenticate_artista(db: Session, email: str, password: str):
-    """Autentica un artista"""
-    artista = dao_get_artista_by_email(db, email)
-    if not artista:
+def authenticate_user(db: Session, email: str, password: str):
+    """Autentica un usuario normal"""
+    user = dao_get_user_by_email(db, email)
+    if not user:
         return None
-    if not verify_password(password, artista.password):
+    if not verify_password(password, user.password):
         return None
-    return artista
+    return user
 
-def register_artista(data: ArtistCreate, db: Session):
-    """Registra un nuevo artista"""
-    # Comprobar si el artista ya existe
-    existing_artista = dao_get_artista_by_email(db, data.email)
-    if existing_artista:
-        raise HTTPException(status_code=409, detail="El artista ya existe")
+def register_user(data: UserCreate, db: Session):
+    """Registra un nuevo usuario"""
+    # Comprobar si el usuario ya existe
+    existing_user = dao_get_user_by_email(db, data.email)
+    if existing_user:
+        raise HTTPException(status_code=409, detail="El usuario ya existe")
 
     # Hashear contraseña y construir modelo con el factory
     hashed_pw = get_password_hash(data.password)
-    new_artista = build_artista_model(data, hashed_pw)
+    new_user = build_user_model(data, hashed_pw)
 
     # Persistir con el DAO
-    created = dao_create_artista(db, new_artista)
+    created = dao_create_user(db, new_user)
     return created
 
-def get_artista_by_email(email: str, db: Session):
-    """Obtiene un artista por email"""
-    artista = dao_get_artista_by_email(db, email)
-    if not artista:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Artista no encontrado")
-    return artista
+def get_user_by_email(email: str, db: Session):
+    """Obtiene un usuario por email"""
+    user = dao_get_user_by_email(db, email)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
+    return user

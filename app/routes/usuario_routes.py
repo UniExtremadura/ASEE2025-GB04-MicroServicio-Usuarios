@@ -2,7 +2,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 from app.schemas.usuario_schema import UserCreate, UserResponse
-from app.services.auth_service import register_user, get_user_by_email, get_password_hash  # 👈 Cambiar import
+from app.services.usuario_service import register_user, get_user_by_email, get_password_hash 
 from app.services.image_service import save_avatar
 from app.core.database import get_db
 from app.dao.usuario_dao import update_user, get_user_by_email as dao_get_user
@@ -78,7 +78,7 @@ async def actualizar_perfil(
         
         # Actualizar password si se proporciona
         if password:
-            update_data["password"] = get_password_hash(password)  # 👈 Usar get_password_hash
+            update_data["password"] = get_password_hash(password)  
         
         # Actualizar avatar si se proporciona
         if avatar:

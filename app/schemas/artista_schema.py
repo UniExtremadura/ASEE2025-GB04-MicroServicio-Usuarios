@@ -1,16 +1,17 @@
-from pydantic import BaseModel, EmailStr, HttpUrl
-from typing import List, Optional
+from pydantic import BaseModel
+from typing import Optional
 
 class ArtistCreate(BaseModel):
-    email: EmailStr
+    email: str
     password: str
     display_name: str
-    avatar_url: Optional[HttpUrl] = None
+    avatar_url: Optional[str] = None  
 
 
 class ArtistResponse(BaseModel):
-    email: EmailStr
+    email: str
     display_name: str
-    avatar_url: Optional[HttpUrl] = None
+    avatar_url: Optional[str] = None  
 
-    model_config = {"from_attributes": True}
+    class Config:
+        from_attributes = True
