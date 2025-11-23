@@ -27,6 +27,8 @@ share/python-wheels/
 *.egg
 PIPFILE.lock
 
+node_modules/
+
 # PyInstaller
 *.manifest
 *.spec

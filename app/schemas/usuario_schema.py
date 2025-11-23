@@ -26,7 +26,7 @@ class UserResponse(BaseModel):
     email: str
     display_name: str
     full_name: str
-    avatar_url: Optional[str] = None  # 👈 Añadir este campo
+    avatar_url: Optional[str] = None 
     age: Optional[int] = None
     is_admin: bool = False
 

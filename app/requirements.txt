@@ -10,4 +10,6 @@ python-dotenv
 argon2-cffi
 python-multipart
 python-jose[cryptography]
-python-multipart
+pydantic[email]
+httpx
+jspdf

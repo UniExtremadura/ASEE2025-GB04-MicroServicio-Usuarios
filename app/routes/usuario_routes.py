@@ -2,7 +2,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 from app.schemas.usuario_schema import UserCreate, UserResponse
-from app.services.usuario_service import register_user, get_user_by_email, get_password_hash 
+from app.services.usuario_service import register_user, get_user_by_email, get_password_hash , delete_user_service
 from app.services.image_service import save_avatar
 from app.core.database import get_db
 from app.dao.usuario_dao import update_user, get_user_by_email as dao_get_user
@@ -20,12 +20,12 @@ async def registro_completo(
     db: Session = Depends(get_db)
 ):
     try:
-        # 👇 Primero guardar la imagen si existe
+        # Primero guardar la imagen si existe
         avatar_url = None
         if img_perfil:
             avatar_url = await save_avatar(img_perfil, email)
         
-        # 👇 Crear el usuario CON la URL del avatar
+        # Crear el usuario CON la URL del avatar
         user_data = UserCreate(
             email=email,
             password=password,
@@ -110,3 +110,10 @@ def get_user(email: str, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     return user
+
+@router.delete("/{email}", status_code=status.HTTP_200_OK)
+def eliminar_usuario(email: str, db: Session = Depends(get_db)):
+    """
+    Elimina un usuario por su email.
+    """
+    return delete_user_service(email, db)

@@ -2,7 +2,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Form, File, UploadFile, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 from app.schemas.artista_schema import ArtistCreate, ArtistResponse, ArtistUpdate
-from app.services.artista_service import register_artista, get_artista_by_email, update_artista_service
+from app.services.artista_service import register_artista, get_artista_by_email, update_artista_service, delete_artista_service
 from app.services.image_service import save_avatar
 from app.core.database import get_db
 
@@ -46,7 +46,6 @@ def get_artist(email: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Artista no encontrado")
     return artist
 
-# --- ENDPOINT PUT (Corregido para usar display_name) ---
 @router.put("/{email}", response_model=ArtistResponse)
 async def update_artist(
     email: str,
@@ -60,7 +59,7 @@ async def update_artist(
         if avatar:
             avatar_url = await save_avatar(avatar, email) 
         
-        # Ahora usamos display_name, que coincide con el esquema y la BD
+        
         update_data = ArtistUpdate(
             display_name=display_name, 
             password=password,
@@ -73,3 +72,11 @@ async def update_artist(
     except Exception as e:
         print(f"Error actualizando artista: {str(e)}") 
         raise HTTPException(status_code=400, detail=f"Error actualizando: {str(e)}")
+    
+    
+@router.delete("/{email}", status_code=status.HTTP_200_OK)
+def eliminar_artista(email: str, db: Session = Depends(get_db)):
+    """
+    Elimina un artista por su email.
+    """
+    return delete_artista_service(email, db)
