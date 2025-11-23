@@ -1,9 +1,8 @@
 from typing import List, Optional
 from fastapi import APIRouter, Form, File, UploadFile, Depends, status, HTTPException
-from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-from app.schemas.artista_schema import ArtistCreate, ArtistResponse
-from app.services.artista_service import register_artista, get_artista_by_email
+from app.schemas.artista_schema import ArtistCreate, ArtistResponse, ArtistUpdate
+from app.services.artista_service import register_artista, get_artista_by_email, update_artista_service
 from app.services.image_service import save_avatar
 from app.core.database import get_db
 
@@ -18,12 +17,10 @@ async def registro_form(
     db: Session = Depends(get_db)
 ):
     try:
-        # 👇 Primero guardar la imagen si existe
         avatar_url = None
         if img_perfil:
             avatar_url = await save_avatar(img_perfil, email)
         
-        # 👇 Crear el artista CON la URL del avatar
         artist_data = ArtistCreate(
             email=email,
             password=password,
@@ -31,7 +28,6 @@ async def registro_form(
             avatar_url=avatar_url  
         )
         
-        # Registrar el artista
         artist = register_artista(artist_data, db)
 
         return {
@@ -49,3 +45,31 @@ def get_artist(email: str, db: Session = Depends(get_db)):
     if not artist:
         raise HTTPException(status_code=404, detail="Artista no encontrado")
     return artist
+
+# --- ENDPOINT PUT (Corregido para usar display_name) ---
+@router.put("/{email}", response_model=ArtistResponse)
+async def update_artist(
+    email: str,
+    display_name: Optional[str] = Form(None), 
+    password: Optional[str] = Form(None),
+    avatar: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db)
+):
+    try:
+        avatar_url = None
+        if avatar:
+            avatar_url = await save_avatar(avatar, email) 
+        
+        # Ahora usamos display_name, que coincide con el esquema y la BD
+        update_data = ArtistUpdate(
+            display_name=display_name, 
+            password=password,
+            avatar_url=avatar_url 
+        )
+        
+        updated_artist = update_artista_service(email, update_data, db)
+        return updated_artist
+
+    except Exception as e:
+        print(f"Error actualizando artista: {str(e)}") 
+        raise HTTPException(status_code=400, detail=f"Error actualizando: {str(e)}")
