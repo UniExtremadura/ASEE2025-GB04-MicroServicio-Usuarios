@@ -6,5 +6,5 @@ class Artist(Base):
 
     email = Column(String(120), primary_key=True, unique=True, index=True)
     password = Column(String(255), nullable=False)
-    display_name = Column(String(100), nullable=False)   # nombre artístico
+    display_name = Column(String(100), nullable=False) 
     avatar_url = Column(String(255), nullable=True)

@@ -11,12 +11,14 @@ def create_artista(db: Session, artista: Artist):
     return artista
 
 def update_artista(db: Session, db_artista: Artist, update_data: dict):
-    """
-    Actualiza los campos de una instancia de Artista.
-    """
     for key, value in update_data.items():
         setattr(db_artista, key, value)
     
     db.commit()
     db.refresh(db_artista)
     return db_artista
+
+def delete_artista(db: Session, db_artista: Artist):
+    """Elimina un artista de la base de datos"""
+    db.delete(db_artista)
+    db.commit()

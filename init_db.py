@@ -1,6 +1,6 @@
 from app.core.database import Base, engine
 
-from app.models import usuario_model, artista_model  # 👈 Solo importas los modelos reales
+from app.models import usuario_model, artista_model
 
 print("🧨 Borrando todas las tablas...")
 Base.metadata.drop_all(bind=engine)

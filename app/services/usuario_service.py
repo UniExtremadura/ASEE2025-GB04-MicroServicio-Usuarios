@@ -7,7 +7,7 @@ from fastapi import HTTPException, status
 
 from app.models.usuario_model import User
 from app.schemas.usuario_schema import UserCreate, UserResponse
-from app.dao.usuario_dao import get_user_by_email as dao_get_user_by_email, create_user as dao_create_user
+from app.dao.usuario_dao import get_user_by_email as dao_get_user_by_email, create_user as dao_create_user, delete_user as dao_delete_user
 from app.factories.usuario_factory import build_user_model
 from app.core.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 
@@ -53,7 +53,7 @@ def register_user(data: UserCreate, db: Session):
     hashed_pw = get_password_hash(data.password)
     new_user = build_user_model(data, hashed_pw)
 
-    # Persistir con el DAO
+    # DAO
     created = dao_create_user(db, new_user)
     return created
 
@@ -63,3 +63,12 @@ def get_user_by_email(email: str, db: Session):
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
     return user
+
+def delete_user_service(email: str, db: Session):
+    """Elimina un usuario por email si existe"""
+    user = dao_get_user_by_email(db, email)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
+    
+    dao_delete_user(db, user)
+    return {"message": "Usuario eliminado correctamente"}

@@ -10,7 +10,8 @@ from app.schemas.artista_schema import ArtistCreate, ArtistResponse, ArtistUpdat
 from app.dao.artista_dao import (
     get_artista_by_email as dao_get_artista_by_email, 
     create_artista as dao_create_artista,
-    update_artista as dao_update_artista
+    update_artista as dao_update_artista,
+    delete_artista as dao_delete_artista
 )
 from app.factories.artista_factory import build_artista_model
 from app.core.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
@@ -56,7 +57,6 @@ def get_artista_by_email(email: str, db: Session):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Artista no encontrado")
     return artista
 
-# --- FUNCIÓN ACTUALIZADA (FIX NULOS) ---
 def update_artista_service(email: str, data: ArtistUpdate, db: Session):
     # 1. Buscar al artista
     artista = dao_get_artista_by_email(db, email)
@@ -66,8 +66,7 @@ def update_artista_service(email: str, data: ArtistUpdate, db: Session):
     # 2. Convertir a diccionario
     update_data = data.dict()
 
-    # ⚠️ FIX CRÍTICO: Eliminar claves con valor None para no sobrescribir datos con NULL
-    # Esto protege password, avatar_url y cualquier campo opcional.
+    # Eliminar campos None
     update_data = {k: v for k, v in update_data.items() if v is not None}
 
     # 3. Hashear password SOLO si viene y no está vacía
@@ -83,3 +82,13 @@ def update_artista_service(email: str, data: ArtistUpdate, db: Session):
     updated_artista = dao_update_artista(db, artista, update_data)
     
     return updated_artista
+
+
+def delete_artista_service(email: str, db: Session):
+    """Elimina un artista por email si existe"""
+    artista = dao_get_artista_by_email(db, email)
+    if not artista:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Artista no encontrado")
+    
+    dao_delete_artista(db, artista)
+    return {"message": "Artista eliminado correctamente"}
